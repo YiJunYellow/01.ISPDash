@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>壓合車間｜ISPDASH</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- 全站 favicon：delta001.png -->
+  <link rel="icon" type="image/png" href="iconbase/delta001.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- 側邊欄 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-vertical">
+      <!-- logo -->
+      <img src="iconbase/ispdash001.png" alt="ISPDASH logo" />
+      <span class="brand-text">ISPDASH</span>
+    </div>
+    <!-- 側邊欄切換按鈕 -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="收起/展開側邊欄">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <nav class="nav">
+      <!-- 改成連到設備總覽頁（equip.html） -->
+      <a href="equip.html">
+        <img src="iconbase/control001.png" alt="設備總覽圖示" class="icon" />
+        <span>設備總覽</span>
+      </a>
+      <!-- 本頁為壓合車間，保持 active -->
+      <a href="index.html" class="active">
+        <img src="iconbase/calculate_yellow_001.png" alt="壓合車間圖示" class="icon" />
+        <span>壓合車間</span>
+      </a>
+    </nav>
+<div class="footer">
+  <a href="diaeap.html" style="display:flex; align-items:center; gap:8px; color:#fff; text-decoration:none;">
+    <img src="iconbase/delta001.png" alt="DIAEAP logo" class="footer-icon" />
+    <span>DIAEAP</span>
+  </a>
+</div>
+
+  </aside>
+
+  <!-- 主內容 -->
+  <main class="main">
+    <h2>壓合車間</h2>
+
+    <!-- 圓環 -->
+    <section>
+      <div class="bar">
+        <img src="iconbase/calculate_gray_001.png" class="bar-icon" alt="icon" />
+        壓合車間運作（單位: Min）
+      </div>
+      <div class="grid-4">
+        <div class="ring"><div id="ring-P01A"></div><h4>P01A</h4></div>
+        <div class="ring"><div id="ring-P01B"></div><h4>P01B</h4></div>
+        <div class="ring"><div id="ring-P02A"></div><h4>P02A</h4></div>
+        <div class="ring"><div id="ring-P02B"></div><h4>P02B</h4></div>
+      </div>
+    </section>
+
+    <!-- 柱狀圖 -->
+    <section>
+      <div class="bar">
+        <img src="iconbase/calculate_gray_001.png" class="bar-icon" alt="icon" />
+        壓合生產概況（單位: Hour）
+      </div>
+      <div class="cards">
+        <div class="card">
+          <h5>壓合總數</h5>
+          <canvas id="barTotal"></canvas>
+        </div>
+        <div class="card">
+          <h5>壓合不良品</h5>
+          <canvas id="barDefect"></canvas>
+        </div>
+        <div class="card">
+          <h5>壓機警報數</h5>
+          <canvas id="barAlarm"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 折線圖 -->
+    <section>
+      <div class="bar">
+        <img src="iconbase/calculate_gray_001.png" class="bar-icon" alt="icon" />
+        壓機真空曲線（單位: Torr）
+      </div>
+      <div class="line-wrap">
+        <canvas id="lineVacuum"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <!-- 前端邏輯 -->
+  <script src="script.js"></script>
+</body>
+</html>

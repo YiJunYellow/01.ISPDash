@@ -1,0 +1,275 @@
+:root {
+  --panel:#0B6FA4;   /* 標題藍 */
+  --teal:#59C3B0;    /* 圓環主色 */
+  --gray:#D9D9D9;
+  --red:#E53935;
+  --bg:#f3f6f8;
+  --text:#153243;
+}
+
+/* 基本 */
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Segoe UI, Roboto, Helvetica, Arial, "Noto Sans TC", sans-serif;
+}
+
+/* 側邊欄 */
+.sidebar {
+  position:fixed; top:0; left:0; bottom:0;
+  width:200px; background:#0f4571; color:#fff;
+  display:flex; flex-direction:column; align-items:center;
+  padding:16px 8px; gap:16px;
+  transition: width 0.3s ease;
+}
+
+/* 側邊欄收起狀態 */
+.sidebar.collapsed {
+  width: 60px;
+}
+
+/* 側邊欄切換按鈕 */
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #0f4571;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.sidebar-toggle:hover {
+  background: #fff;
+  color: #0f4571;
+}
+
+.sidebar.collapsed .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* 品牌區：橫向（可用在舊版） */
+.brand{
+  display:flex; align-items:center; gap:10px;
+  font-weight:700; font-size:20px; margin:8px 0 24px;
+}
+.brand img{ width:34px; height:34px; object-fit:contain; }
+.brand span{ letter-spacing:1px; }
+
+/* 品牌區：縱向（你要的版本） */
+.brand-vertical{
+  display:flex; flex-direction:column; align-items:center;
+  gap:6px; margin:8px 0 24px;
+}
+.brand-vertical img{ width:48px; height:48px; object-fit:contain; }
+.brand-vertical span{ font-weight:700; font-size:18px; letter-spacing:1px; }
+
+/* 收起狀態隱藏文字 */
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav a span,
+.sidebar.collapsed .footer span {
+  display: none;
+}
+
+/* 側邊欄導覽（含圖示） */
+.nav a{
+  display:flex; align-items:center; gap:8px;
+  color:#aee; text-decoration:none;
+  padding:10px 12px; border-radius:8px; margin:4px 0;
+  width:100%;
+}
+.nav a.active, .nav a:hover{ background:rgba(255,255,255,.12); color:#fff; }
+.nav a img.icon { width:20px; height:20px; object-fit:contain; }
+.nav a span { flex:1; }
+
+/* 底部品牌 */
+.footer {
+  margin-top:auto;
+  opacity:.9;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-bottom:12px;
+}
+.footer-icon { width:28px; height:28px; object-fit:contain; }
+
+/* 主區域 */
+.main{ 
+  margin-left:200px; 
+  padding:16px 22px; 
+  transition: margin-left 0.3s ease;
+}
+
+/* 主區域在側邊欄收起時的調整 */
+.sidebar.collapsed + .main {
+  margin-left: 60px;
+}
+h2{ margin:8px 0 12px; }
+
+/* 區塊標題 */
+.bar{
+  background:var(--panel); color:#fff; padding:6px 10px;
+  border-radius:6px; font-weight:700; margin:12px 0;
+  display:flex; align-items:center; gap:6px;
+}
+.bar-icon { width:18px; height:18px; object-fit:contain; }
+
+/* 圓環區 */
+.grid-4{
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:18px; padding:10px 0;
+}
+.ring{
+  background:#fff; border-radius:10px; padding:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+  display:flex; flex-direction:column; align-items:center;
+}
+/* 初始大小（之後會被尺寸微調覆蓋） */
+.ring svg{ width:140px; height:140px; }
+.ring h4{ margin:8px 0 0; }
+.ring .center{ margin-top:-95px; text-align:center; }
+.ring .pct{ font-size:24px; font-weight:700; }
+.ring .txt{ font-size:13px; }
+
+/* 三張卡片（柱狀圖） */
+.cards{
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:18px; margin-top:12px;
+}
+.card{
+  background:#fff; border-radius:10px; padding:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+  height:240px;                /* 之後會被尺寸微調覆蓋 */
+}
+.card canvas{
+  height:180px !important;     /* 之後會被尺寸微調覆蓋 */
+}
+
+/* 折線圖容器 */
+.line-wrap{
+  background:#fff; border-radius:10px; padding:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08); margin-top:12px;
+}
+.line-wrap canvas{
+  height:280px !important;     /* 之後會被尺寸微調覆蓋 */
+}
+
+/* ====== 設備總覽（equip.html） ====== */
+.equip-topbar{
+  display:grid;
+  grid-template-columns: 1fr auto auto;
+  align-items:center;
+  gap:16px;
+  background:#0B6FA4;
+  color:#fff;
+  padding:10px 12px;
+  border-radius:8px;
+  margin-bottom:12px;
+}
+.equip-title{ font-weight:800; font-size:22px; letter-spacing:.5px; }
+.equip-kpis{ display:flex; gap:10px; }
+.badge{
+  display:inline-block; padding:6px 12px; border-radius:8px;
+  font-weight:700; box-shadow:0 2px 0 rgba(0,0,0,.15);
+}
+.badge.run{ background:#1abc9c; color:#fff; }
+.badge.idle{ background:#f39c12; color:#fff; }
+.badge.down{ background:#e74c3c; color:#fff; }
+.equip-time{ font-weight:600; opacity:.95; }
+
+.equip-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:16px;
+  margin-top:12px;
+}
+.equip-tile{
+  background:#fff; border-radius:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  overflow:hidden;
+}
+.equip-tile .tile-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 12px; color:#fff; font-weight:800;
+  letter-spacing:.2px;
+}
+.equip-tile.run   .tile-head{ background:#27ae60; }
+.equip-tile.idle  .tile-head{ background:#f39c12; }
+.equip-tile.down  .tile-head{ background:#e74c3c; }
+.equip-tile .tile-head .eqpid  { font-size:14px; }
+.equip-tile .tile-head .eqptype{ font-size:13px; opacity:.95; }
+
+.equip-tile .tile-body{
+  padding:10px 12px; color:#333; line-height:1.45;
+  display:grid; grid-template-columns: repeat(2, 1fr); gap:6px 12px;
+  font-size:13px;
+}
+.equip-tile .tile-body div:nth-child(1),
+.equip-tile .tile-body div:nth-child(2){
+  grid-column: span 1;
+}
+.equip-tile .tile-body div:nth-child(n+3){
+  grid-column: span 1;
+}
+
+@media (max-width: 1200px){
+  .equip-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px){
+  .equip-grid{ grid-template-columns: 1fr; }
+}
+
+/* ===== 壓合車間尺寸微調（避免下方折線被擋） ===== */
+.main > section { margin-bottom: 14px; }
+
+/* 圓環縮小一點（配合 script.js 的 size:120/stroke:12） */
+.ring svg { width:120px; height:120px; }
+.ring .center { margin-top:-82px; }
+.ring .pct { font-size:22px; }
+
+/* 三張柱狀圖卡片再矮一點 */
+.card { height:220px; }
+.card canvas { height:160px !important; }
+
+/* 折線圖高度降一點，canvas 撐滿容器 */
+.line-wrap { overflow:visible; }
+.line-wrap canvas {
+  display:block;
+  width:100% !important;
+  height:240px !important;
+}
+
+/* 簡單響應式微調（窄螢幕時 2 欄） */
+@media (max-width: 1200px){
+  .grid-4{ grid-template-columns:repeat(2,1fr); }
+  .cards{ grid-template-columns:repeat(2,1fr); }
+}
+
+
+/* DIAEAP 頁面圖片樣式 */
+.diaeap-hero{
+  display:flex;
+  gap:40px;
+  align-items:flex-start;
+  margin-top:20px;
+}
+.img-cutout{
+  display:block;
+  background:transparent;
+  border:0; outline:0;
+  box-shadow:none !important;   /* 移除矩形陰影 */
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.20)); /* 依透明區域投影 */
+}
+.img-cutout.big{ width:320px; }
+.img-cutout.small{ width:220px; }

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>設備總覽｜ISPDASH</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="iconbase/delta001.png" />
+</head>
+<body>
+  <!-- 側邊欄 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-vertical">
+      <img src="iconbase/ispdash001.png" alt="ISPDASH logo" />
+      <span class="brand-text">ISPDASH</span>
+    </div>
+    <!-- 側邊欄切換按鈕 -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="收起/展開側邊欄">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <nav class="nav">
+      <a href="equip.html" class="active">
+        <img src="iconbase/control001.png" alt="設備總覽圖示" class="icon" />
+        <span>設備總覽</span>
+      </a>
+      <a href="index.html">
+        <img src="iconbase/calculate_yellow_001.png" alt="壓合車間圖示" class="icon" />
+        <span>壓合車間</span>
+      </a>
+    </nav>
+<div class="footer">
+  <a href="diaeap.html" style="display:flex; align-items:center; gap:8px; color:#fff; text-decoration:none;">
+    <img src="iconbase/delta001.png" class="footer-icon" alt="DIAEAP"/>
+    <span>DIAEAP</span>
+  </a>
+</div>
+
+  </aside>
+
+  <!-- 主內容 -->
+  <main class="main">
+    <!-- 頂部標題列 -->
+    <header class="equip-topbar">
+      <div class="equip-title">HDI廠區</div>
+      <div class="equip-kpis">
+        <span class="badge run">Run</span>
+        <span class="badge idle">Idle</span>
+        <span class="badge down">Down</span>
+      </div>
+      <div class="equip-time" id="equipTime"></div>
+    </header>
+
+    <!-- 設備卡片區 -->
+    <section class="equip-grid" id="equipGrid">
+      <!-- 設備卡片將由JavaScript動態生成 -->
+      <div style="text-align: center; padding: 20px; color: #666;">
+        正在載入設備數據...
+      </div>
+    </section>
+  </main>
+
+  <script src="equip.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
