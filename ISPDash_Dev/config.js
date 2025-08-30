@@ -9,6 +9,16 @@ const CONFIG = {
         EQP_SUMMARY: '/api/eqp_overview/summary'
     },
     
+    // Grafana 配置
+    GRAFANA: {
+        BASE_URL: 'http://localhost:7766',
+        DASHBOARD_ID: 'df908cf3-da81-4901-9759-e57f9a1dc5d4',
+        PANEL_ID: 1,
+        ORG_ID: 1,
+        REFRESH_INTERVAL: '5s',
+        THEME: 'light'
+    },
+    
     // 更新頻率（毫秒）
     UPDATE_INTERVAL: 30000,
     

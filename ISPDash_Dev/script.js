@@ -53,9 +53,9 @@ if (ringP01A && ringP01B && ringP02A && ringP02B) {
 const barTotal = document.getElementById('barTotal');
 const barDefect = document.getElementById('barDefect');
 const barAlarm = document.getElementById('barAlarm');
-const lineVacuum = document.getElementById('lineVacuum');
 
-if (barTotal && barDefect && barAlarm && lineVacuum) {
+// 只檢查柱狀圖元素，因為折線圖已經被 Grafana 取代
+if (barTotal && barDefect && barAlarm) {
   const barOpt = {
     responsive:true,
     maintainAspectRatio:false,   // 允許自訂高度
@@ -79,25 +79,6 @@ if (barTotal && barDefect && barAlarm && lineVacuum) {
     type:'bar',
     data:{labels:state.alarm.labels,datasets:[{data:state.alarm.data,backgroundColor:'#0B6FA4'}]},
     options:barOpt
-  });
-  
-  new Chart(lineVacuum, {
-    type:'line',
-    data:{
-      labels:state.line.labels,
-      datasets:[
-        {label:'P01A', data:state.line.series.P01A},
-        {label:'P01B', data:state.line.series.P01B},
-        {label:'P02A', data:state.line.series.P02A},
-        {label:'P02B', data:state.line.series.P02B}
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,  // 允許高度依 CSS
-      plugins:{legend:{position:'right'}},
-      scales:{y:{beginAtZero:true}}
-    }
   });
 }
 
