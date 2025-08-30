@@ -20,6 +20,15 @@
   - 包含不同狀態（RUN、IDLE、DOWN）的設備
   - 顯示插入結果統計
 
+### 3. `03_create_pressing_vacuum_table.sql`
+- **用途**: 創建壓合車間真空曲線資料表並插入範例資料
+- **功能**:
+  - 創建真空曲線資料表結構
+  - 包含真空壓力、溫度、壓力等製程參數
+  - 插入 4 台壓機的真空曲線資料
+  - 涵蓋 11:00-14:30 的時間範圍
+  - 每 30 分鐘一筆資料點
+
 ## 🗄️ 資料表結構
 
 ### EquipmentOverview 資料表
@@ -36,12 +45,26 @@
 | ProductionTime | INT | 生產時間(分鐘) | >= 0 |
 | LastUpdateTime | DATETIME2(3) | 最後更新時間 | 自動更新 |
 
+### Pressing_VacuumHistory 資料表
+
+| 欄位名稱 | 資料類型 | 說明 | 約束 |
+|---------|---------|------|------|
+| ID | INT | 自動編號 | 主鍵 |
+| EquipmentID | VARCHAR(50) | 設備編號 | NOT NULL |
+| RecordTime | DATETIME2(3) | 記錄時間 | NOT NULL |
+| VacuumPressure | DECIMAL(5,2) | 真空壓力 (Torr) | 0-10 |
+| Temperature | DECIMAL(5,2) | 溫度 (°C) | 0-200 |
+| Pressure | DECIMAL(5,2) | 壓力 (Bar) | 0-10 |
+| Status | NVARCHAR(20) | 狀態 | NORMAL/WARNING/ALARM |
+| CreatedTime | DATETIME2(3) | 建立時間 | 自動更新 |
+
 ## 🔧 執行順序
 
 請按照以下順序執行 SQL 腳本：
 
 1. `01_create_database.sql` - 創建資料庫
-2. `02_create_equipment_overview_table.sql` - 創建資料表並插入範例資料
+2. `02_create_equipment_overview_table.sql` - 創建設備總覽資料表並插入範例資料
+3. `03_create_pressing_vacuum_table.sql` - 創建壓合車間真空曲線資料表並插入範例資料
 
 ## 📊 範例資料
 
@@ -53,6 +76,14 @@
 - **3 種狀態**: RUN（運行中）、IDLE（閒置）、DOWN（故障）
 - **合理的數值範圍**用於達成率、警報數和生產時間
 
+### 壓合車間真空曲線資料
+- **4 台壓機**: P01A、P01B、P02A、P02B
+- **時間範圍**: 11:00-14:30，每 30 分鐘一筆資料
+- **真空壓力範圍**: 0.5-6.5 Torr
+- **溫度範圍**: 77-96°C
+- **壓力範圍**: 1.2-3.1 Bar
+- **狀態分布**: NORMAL、WARNING
+
 ## 🚀 快速開始
 
 在 SQL Server Management Studio 中執行：
@@ -61,8 +92,11 @@
 -- 1. 創建資料庫
 EXECUTE [01_create_database.sql]
 
--- 2. 創建資料表並插入範例資料
+-- 2. 創建設備總覽資料表並插入範例資料
 EXECUTE [02_create_equipment_overview_table.sql]
+
+-- 3. 創建壓合車間真空曲線資料表並插入範例資料
+EXECUTE [03_create_pressing_vacuum_table.sql]
 ```
 
 ## 📝 注意事項
