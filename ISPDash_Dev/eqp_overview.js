@@ -9,20 +9,29 @@ function tickClock(){
 }
 setInterval(tickClock, 1000); tickClock();
 
-// 從SQL Server獲取設備數據
+// 從API服務獲取設備數據
 async function fetchEquipmentData() {
   try {
     console.log('正在獲取設備數據...');
-    const response = await fetch('/api/equipment');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiService.getEquipmentOverall();
     console.log('獲取到的設備數據:', data);
     return data;
   } catch (error) {
     console.error('獲取設備數據失敗:', error);
     return [];
+  }
+}
+
+// 獲取設備統計摘要
+async function fetchEquipmentSummary() {
+  try {
+    console.log('正在獲取設備統計...');
+    const data = await apiService.getEquipmentSummary();
+    console.log('獲取到的設備統計:', data);
+    return data;
+  } catch (error) {
+    console.error('獲取設備統計失敗:', error);
+    return { RUN: 0, IDLE: 0, DOWN: 0 };
   }
 }
 
@@ -70,7 +79,7 @@ async function initializeEquipmentData() {
   updateEquipmentCards(equipmentList);
 }
 
-// 定期更新設備數據（每30秒）
+// 定期更新設備數據
 async function updateEquipmentData() {
   const equipmentList = await fetchEquipmentData();
   updateEquipmentCards(equipmentList);
@@ -79,6 +88,6 @@ async function updateEquipmentData() {
 // 頁面載入時初始化
 document.addEventListener('DOMContentLoaded', function() {
   initializeEquipmentData();
-  // 每30秒更新一次數據
-  setInterval(updateEquipmentData, 30000);
+  // 使用配置的更新頻率
+  setInterval(updateEquipmentData, CONFIG.UPDATE_INTERVAL);
 });

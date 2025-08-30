@@ -1,0 +1,17 @@
+{
+  "name": "ispdash-frontend",
+  "version": "1.0.0",
+  "description": "ISPDash 前端應用",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 8080 -c-1",
+    "dev": "npx http-server . -p 8080 -c-1 --cors",
+    "build": "echo '前端為靜態文件，無需構建'"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "keywords": ["ispdash", "frontend", "dashboard"],
+  "author": "ISPDash Team",
+  "license": "MIT"
+}
