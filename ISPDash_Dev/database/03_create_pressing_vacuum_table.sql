@@ -60,16 +60,16 @@ PRINT 'Pressing_VacuumHistory 資料表創建完成！';
 GO
 
 -- =============================================
--- 插入範例資料 - 未來7天每小時一筆
+-- 插入範例資料 - 過去2天到未來7天每小時一筆
 -- =============================================
 
--- 使用 CTE 和 CROSS JOIN 生成未來7天的每小時數據
+-- 使用 CTE 和 CROSS JOIN 生成過去2天到未來7天的每小時數據
 WITH DateHours AS (
     SELECT 
         DATEADD(HOUR, n, GETDATE()) AS RecordTime
     FROM (
-        SELECT TOP (24 * 7) -- 7天 * 24小時 = 168小時
-            ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1 AS n
+        SELECT TOP (24 * 9) -- 9天 * 24小時 = 216小時 (過去2天 + 未來7天)
+            ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 48 AS n  -- 從-48開始(過去2天)到167(未來7天)
         FROM master..spt_values t1
         CROSS JOIN master..spt_values t2
     ) numbers
