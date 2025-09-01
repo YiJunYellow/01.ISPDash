@@ -472,7 +472,7 @@
       "type": "barchart"
     }
   ],
-  "refresh": "30s",
+  "refresh": "5s",
   "schemaVersion": 39,
   "tags": [],
   "templating": {
@@ -486,6 +486,6 @@
   "timezone": "",
   "title": "ISPDASH",
   "uid": "c8548508-1710-4a9e-b580-7881d5f37aeb",
-  "version": 15,
+  "version": 16,
   "weekStart": ""
 }
