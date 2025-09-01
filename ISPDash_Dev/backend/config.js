@@ -36,8 +36,17 @@ const config = {
         version: '1.0.0',
         prefix: '/api',
         endpoints: {
-            eqpOverview_Ovearall: '/eqp_overview/overall',
-            eqpOverview_Summary: '/eqp_overview/summary'
+            // 設備總覽相關
+            eqpOverview_Overall: '/eqp_overview/overall',
+            eqpOverview_Summary: '/eqp_overview/summary',
+            eqpOverview_Single: '/eqp_overview/overall/:id',
+            eqpOverview_UpdateState: '/eqp_overview/overall/:id/state',
+            eqpOverview_UpdateAlarm: '/eqp_overview/overall/:id/alarm',
+            
+            // 壓合狀態相關
+            pressingStatus_All: '/pressing_status',
+            pressingStatus_Single: '/pressing_status/:equipmentId',
+            pressingStatus_Update: '/pressing_status/:equipmentId'
         }
     },
 

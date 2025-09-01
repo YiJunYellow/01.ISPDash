@@ -17,6 +17,7 @@ database.connect().catch(err => {
 
 // API 路由
 app.use(`${config.api.prefix}/eqp_overview`, require('./routes/eqp_overview'));
+app.use(`${config.api.prefix}/pressing_status`, require('./routes/pressing_status'));
 
 // API 服務器狀態檢查
 app.get('/', (req, res) => {

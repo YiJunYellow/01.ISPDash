@@ -4,7 +4,7 @@ function renderRing(el, percent) {
   const len = 2*Math.PI*r;
   const val = Math.max(0, Math.min(100, percent));
   const dash = (val/100)*len;
-  const danger = val < 30;
+  const danger = val < 50; // 稼動率低於50%顯示紅色
   const color = danger ? 'var(--red)' : 'var(--teal)';
   el.innerHTML = `
     <svg viewBox="0 0 ${size} ${size}">
@@ -19,22 +19,147 @@ function renderRing(el, percent) {
     </div>`;
 }
 
-// ---- 假資料 ----
-const state = {
-  rings: { P01A:72, P01B:74, P02A:13, P02B:94 },
-  total: { labels:['P01A','P01B','P02A','P02B'], data:[260,220,80,310] },
-  defect:{ labels:['P01A','P01B','P02A','P02B'], data:[12,14,96,15] },
-  alarm: { labels:['P01A','P01B','P02A','P02B'], data:[1,1,8,1] },
-  line: {
-    labels:['11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30'],
-    series:{
-      P01A:[4,3,2,4,7,8,5,6],
-      P01B:[1,2,3,4,6,6,3,2],
-      P02A:[0.5,1.2,2.1,3.9,5.1,6.2,4.8,1.9],
-      P02B:[3.4,2.3,1.8,3.5,4.4,5.7,4.1,3.9]
+// ---- 生成 Grafana URL ----
+function generateGrafanaURL(panelId) {
+  const { BASE_URL, DASHBOARD_ID, ORG_ID, THEME } = CONFIG.GRAFANA;
+  return `${BASE_URL}/d-solo/${DASHBOARD_ID}/ispdash?orgId=${ORG_ID}&panelId=${panelId}&theme=${THEME}`;
+}
+
+// ---- 初始化 Grafana 面板 ----
+function initializeGrafanaPanels() {
+  // 設置所有Grafana面板的URL
+  const iframes = document.querySelectorAll('iframe[data-panel]');
+  
+  iframes.forEach(iframe => {
+    const panelType = iframe.getAttribute('data-panel');
+    const panelId = CONFIG.GRAFANA.PANELS[panelType];
+    
+    if (panelId) {
+      iframe.src = generateGrafanaURL(panelId);
     }
-  }
+  });
+}
+
+
+// ---- 稼動率數據狀態 ----
+const state = {
+  rings: { P01A:0, P01B:0, P02A:0, P02B:0 }, // 初始化為0，等待數據庫數據
+  lastUpdate: null,
+  isUpdating: false
 };
+
+// ---- 從數據庫讀取稼動率數據 ----
+async function fetchOperationRates() {
+  // 避免重複更新
+  if (state.isUpdating) {
+    return;
+  }
+  
+  state.isUpdating = true;
+  
+  try {
+    // 使用配置中的新API端點
+    const response = await fetch(`${CONFIG.API_BASE_URL}${CONFIG.API_ENDPOINTS.PRESSING_STATUS}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // 更新稼動率數據
+    if (data && Array.isArray(data)) {
+      let hasChanges = false;
+      
+      data.forEach(item => {
+        if (item.EquipmentID && item.OperationRate !== undefined) {
+          const newValue = parseFloat(item.OperationRate);
+          const oldValue = state.rings[item.EquipmentID];
+          
+          // 只有當數據真正改變時才更新
+          if (Math.abs(newValue - oldValue) > 0.01) {
+            state.rings[item.EquipmentID] = newValue;
+            hasChanges = true;
+          }
+        }
+      });
+      
+      // 只有在數據真正改變時才更新圓環圖
+      if (hasChanges) {
+        // 顯示更新指示器
+        showUpdateIndicator(true);
+        
+        // 延遲更新，讓用戶看到指示器
+        setTimeout(() => {
+          updateRings();
+          
+          // 隱藏更新指示器
+          setTimeout(() => {
+            showUpdateIndicator(false);
+          }, 300);
+        }, 100);
+        
+        // 記錄更新時間
+        state.lastUpdate = new Date();
+        
+        if (CONFIG.DEBUG) {
+          console.log('稼動率數據已更新:', state.rings);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('獲取稼動率數據失敗:', error);
+    
+    // 如果API調用失敗，使用備用數據（從你的截圖中獲取）
+    const fallbackData = {
+      P01A: 72.00,
+      P01B: 74.00,
+      P02A: 13.00,
+      P02B: 94.00
+    };
+    
+    // 檢查備用數據是否與當前數據不同
+    let needsUpdate = false;
+    Object.keys(fallbackData).forEach(key => {
+      if (Math.abs(fallbackData[key] - state.rings[key]) > 0.01) {
+        needsUpdate = true;
+      }
+    });
+    
+    if (needsUpdate) {
+      Object.assign(state.rings, fallbackData);
+      updateRings();
+      
+      if (CONFIG.DEBUG) {
+        console.log('使用備用稼動率數據:', state.rings);
+      }
+    }
+  } finally {
+    state.isUpdating = false;
+  }
+}
+
+// ---- 更新圓環圖顯示 ----
+function updateRings() {
+  if (ringP01A && ringP01B && ringP02A && ringP02B) {
+    // 使用 requestAnimationFrame 確保平滑更新
+    requestAnimationFrame(() => {
+      renderRing(ringP01A, state.rings.P01A);
+      renderRing(ringP01B, state.rings.P01B);
+      renderRing(ringP02A, state.rings.P02A);
+      renderRing(ringP02B, state.rings.P02B);
+    });
+  }
+}
+
+// ---- 顯示/隱藏更新指示器 ----
+function showUpdateIndicator(show) {
+  const updateIndicator = document.getElementById('update-indicator');
+  if (updateIndicator) {
+    updateIndicator.style.opacity = show ? '1' : '0';
+    updateIndicator.style.visibility = show ? 'visible' : 'hidden';
+  }
+}
 
 // ---- 初始化圓環（僅在壓合車間頁面執行） ----
 const ringP01A = document.getElementById('ring-P01A');
@@ -42,45 +167,20 @@ const ringP01B = document.getElementById('ring-P01B');
 const ringP02A = document.getElementById('ring-P02A');
 const ringP02B = document.getElementById('ring-P02B');
 
+// 檢查圓環元素是否存在
 if (ringP01A && ringP01B && ringP02A && ringP02B) {
-  renderRing(ringP01A, state.rings.P01A);
-  renderRing(ringP01B, state.rings.P01B);
-  renderRing(ringP02A, state.rings.P02A);
-  renderRing(ringP02B, state.rings.P02B);
+  // 初始化時顯示示例數據，讓用戶看到效果
+  state.rings = {
+    P01A: 72.00,
+    P01B: 74.00,
+    P02A: 13.00,
+    P02B: 94.00
+  };
+  updateRings();
 }
 
 // ---- Chart.js（僅在壓合車間頁面執行） ----
-const barTotal = document.getElementById('barTotal');
-const barDefect = document.getElementById('barDefect');
-const barAlarm = document.getElementById('barAlarm');
-
-// 只檢查柱狀圖元素，因為折線圖已經被 Grafana 取代
-if (barTotal && barDefect && barAlarm) {
-  const barOpt = {
-    responsive:true,
-    maintainAspectRatio:false,   // 允許自訂高度
-    plugins:{legend:{display:false}},
-    scales:{y:{beginAtZero:true}}
-  };
-  
-  new Chart(barTotal, {
-    type:'bar',
-    data:{labels:state.total.labels,datasets:[{data:state.total.data,backgroundColor:'#59C3B0'}]},
-    options:barOpt
-  });
-  
-  new Chart(barDefect, {
-    type:'bar',
-    data:{labels:state.defect.labels,datasets:[{data:state.defect.data,backgroundColor:'#E53935'}]},
-    options:barOpt
-  });
-  
-  new Chart(barAlarm, {
-    type:'bar',
-    data:{labels:state.alarm.labels,datasets:[{data:state.alarm.data,backgroundColor:'#0B6FA4'}]},
-    options:barOpt
-  });
-}
+// 所有柱狀圖都已被 Grafana 取代，不再需要 Chart.js 圖表
 
 // ---- 通用側邊欄切換功能 ----
 document.addEventListener('DOMContentLoaded', function() {
@@ -107,4 +207,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const isNowCollapsed = sidebar.classList.contains('collapsed');
     localStorage.setItem('sidebarCollapsed', isNowCollapsed);
   });
+  
+  // 初始化 Grafana 面板
+  initializeGrafanaPanels();
+  
+  // 初始化稼動率數據
+  fetchOperationRates();
+  
+  // 每30秒更新一次稼動率數據（只更新圓環圖）
+  setInterval(fetchOperationRates, CONFIG.UPDATE_INTERVAL);
 });

@@ -29,6 +29,16 @@
   - 涵蓋 11:00-14:30 的時間範圍
   - 每 30 分鐘一筆資料點
 
+### 4. `04_create_pressing_defect_table.sql`
+- **用途**: 創建壓合不良品統計資料表並插入範例資料
+- **功能**:
+  - 創建壓合不良品統計資料表結構
+  - 包含壓合總數、不良品數量、不良率、警報數等指標
+  - 插入 4 台壓機的即時統計資料（基於柱狀圖數據）
+  - 插入過去7天的歷史資料用於趨勢分析
+  - 創建即時統計和趨勢分析檢視表
+  - 包含完整的資料驗證和約束
+
 ## 🗄️ 資料表結構
 
 ### EquipmentOverview 資料表
@@ -58,6 +68,21 @@
 | Status | NVARCHAR(20) | 狀態 | NORMAL/WARNING/ALARM |
 | CreatedTime | DATETIME2(3) | 建立時間 | 自動更新 |
 
+### Pressing_DefectSummary 資料表
+
+| 欄位名稱 | 資料類型 | 說明 | 約束 |
+|---------|---------|------|------|
+| ID | INT | 自動編號 | 主鍵 |
+| EquipmentID | VARCHAR(50) | 機台編號 | NOT NULL |
+| RecordDate | DATE | 記錄日期 | NOT NULL |
+| TotalPressingCount | INT | 壓合總數 (Hour) | >= 0 |
+| DefectCount | INT | 不良品數量 | >= 0 |
+| DefectRate | DECIMAL(5,2) | 不良率 (%) | 0-100% |
+| AlarmCount | INT | 壓機警報數 | >= 0 |
+| Status | NVARCHAR(20) | 狀態 | NORMAL/WARNING/DANGER |
+| LastUpdateTime | DATETIME2(3) | 最後更新時間 | 自動更新 |
+| CreatedTime | DATETIME2(3) | 建立時間 | 自動更新 |
+
 ## 🔧 執行順序
 
 請按照以下順序執行 SQL 腳本：
@@ -65,6 +90,7 @@
 1. `01_create_database.sql` - 創建資料庫
 2. `02_create_equipment_overview_table.sql` - 創建設備總覽資料表並插入範例資料
 3. `03_create_pressing_vacuum_table.sql` - 創建壓合車間真空曲線資料表並插入範例資料
+4. `04_create_pressing_defect_table.sql` - 創建壓合不良品統計資料表並插入範例資料
 
 ## 📊 範例資料
 
@@ -84,6 +110,16 @@
 - **壓力範圍**: 1.2-3.1 Bar
 - **狀態分布**: NORMAL、WARNING
 
+### 壓合不良品統計資料
+- **4 台壓機**: P01A、P01B、P02A、P02B
+- **即時數據**: 基於柱狀圖的實際數值
+  - P01A: 210壓合數, 8不良品, 3.80%不良率, 1警報
+  - P01B: 230壓合數, 8不良品, 3.48%不良率, 0警報
+  - P02A: 95壓合數, 88不良品, 92.63%不良率, 8警報 (異常)
+  - P02B: 285壓合數, 8不良品, 2.81%不良率, 1警報
+- **歷史數據**: 過去7天的趨勢分析資料
+- **檢視表**: 即時統計和趨勢分析檢視表
+
 ## 🚀 快速開始
 
 在 SQL Server Management Studio 中執行：
@@ -97,10 +133,17 @@ EXECUTE [02_create_equipment_overview_table.sql]
 
 -- 3. 創建壓合車間真空曲線資料表並插入範例資料
 EXECUTE [03_create_pressing_vacuum_table.sql]
+
+-- 4. 創建壓合不良品統計資料表並插入範例資料
+EXECUTE [04_create_pressing_defect_table.sql]
 ```
 
-## 📝 注意事項
+## 📈 檢視表說明
 
-- 執行前請確保有足夠的資料庫權限
-- 資料庫檔案會自動存放在 SQL Server 的預設資料目錄
-- 範例資料僅供測試使用，生產環境請使用真實資料
+### v_Pressing_DefectSummary_Current
+- **用途**: 壓合不良品即時統計
+- **功能**: 顯示當日各機台的統計資料，包含品質等級評估
+
+### v_Pressing_DefectSummary_Trend
+- **用途**: 壓合不良品趨勢分析
+- **功能**: 提供7天移動平均和累計統計，用於趨勢分析
