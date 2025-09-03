@@ -1,0 +1,641 @@
+[
+    {
+        "id": "ff0358a526525cd2",
+        "type": "tab",
+        "label": "ISPDASH",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "de492247843d6f1f",
+        "type": "group",
+        "z": "ff0358a526525cd2",
+        "name": "壓合車間",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "c5c1e37cbda9560b",
+            "9fb451d349700c21",
+            "7d8208080ad7e478",
+            "df2152c3d7a9963d",
+            "9dd69ee01af00410",
+            "c8a29669eff103f8",
+            "91a59561b47e5273",
+            "df9284d39865be6a",
+            "1337827d68c7c133",
+            "cfbe8ca79114a9ab",
+            "941c0c4b8bdebe74",
+            "92ba1cabf2e0992f",
+            "e9887014d1afcc7a",
+            "9eaa3d05b4c578ed",
+            "0c64c7474cec1afd",
+            "97b5a819717b83d5",
+            "209efa787ee77fed",
+            "db13ffbdd9ad2824",
+            "255d29c20c7cd694"
+        ],
+        "x": 54,
+        "y": 279,
+        "w": 1252,
+        "h": 382
+    },
+    {
+        "id": "8e3bce0dccb93ff2",
+        "type": "group",
+        "z": "ff0358a526525cd2",
+        "name": "設備總覽",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "inj-5s-weighted",
+            "tpl-update-weighted",
+            "sql-update-weighted",
+            "tpl-select-weighted",
+            "sql-select-weighted",
+            "dbg-weighted",
+            "01468914631f0631"
+        ],
+        "x": 54,
+        "y": 99,
+        "w": 1172,
+        "h": 142
+    },
+    {
+        "id": "c5c1e37cbda9560b",
+        "type": "inject",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "每5秒觸發",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"cycle\": 1}",
+        "payloadType": "str",
+        "x": 170,
+        "y": 380,
+        "wires": [
+            [
+                "7d8208080ad7e478"
+            ]
+        ]
+    },
+    {
+        "id": "9fb451d349700c21",
+        "type": "debug",
+        "z": "ff0358a526525cd2",
+        "d": true,
+        "g": "de492247843d6f1f",
+        "name": "debug_ispdash",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "7d8208080ad7e478",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "生成遞增數據",
+        "func": "// 使用时间戳来生成递增数据\nconst now = new Date();\nconst timestamp = now.getTime();\nconst cycle = Math.floor((timestamp / 5000) % 101); // 每5秒递增\n\n// 为4台设备生成递增数据\nconst equipmentData = [\n    {\n        ID: 1,\n        EquipmentID: \"P01A\",\n        TotalPressingCount: 100 + cycle,\n        DefectCount: 1 + (cycle % 10),\n        AlarmCount: cycle % 5,\n        OperationRate: Math.min(20 + cycle * 0.3, 50)\n    },\n    {\n        ID: 2,\n        EquipmentID: \"P01B\",\n        TotalPressingCount: 200 + cycle * 2,\n        DefectCount: 5 + (cycle % 15),\n        AlarmCount: cycle % 3,\n        OperationRate: Math.min(60 + cycle * 0.3, 90)\n    },\n    {\n        ID: 3,\n        EquipmentID: \"P02A\",\n        TotalPressingCount: 80 + cycle,\n        DefectCount: 10 + (cycle % 20),\n        AlarmCount: 5 + (cycle % 10),\n        OperationRate: Math.min(10 + cycle * 0.2, 30)\n    },\n    {\n        ID: 4,\n        EquipmentID: \"P02B\",\n        TotalPressingCount: 250 + cycle * 2,\n        DefectCount: 3 + (cycle % 12),\n        AlarmCount: cycle % 6,\n        OperationRate: Math.min(80 + cycle * 0.2, 100)\n    }\n];\n\nmsg.equipmentData = equipmentData;\nnode.log(`Cycle ${cycle}: Generated data for ${equipmentData.length} equipment`);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 380,
+        "wires": [
+            [
+                "df2152c3d7a9963d"
+            ]
+        ]
+    },
+    {
+        "id": "df2152c3d7a9963d",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "循環更新設備",
+        "func": "const equipmentData = msg.equipmentData;\nconst results = [];\n\n// 为每个设备创建更新消息\nequipmentData.forEach(equipment => {\n    // 构建SQL语句（注意：移除分号避免RPC错误）\n    const sql = `\n        UPDATE dbo.Pressing_StatusSummary \n        SET TotalPressingCount = ${equipment.TotalPressingCount},\n            DefectCount = ${equipment.DefectCount},\n            AlarmCount = ${equipment.AlarmCount},\n            OperationRate = ${equipment.OperationRate.toFixed(1)}\n        WHERE ID = ${equipment.ID}\n    `; // 重要：移除分号\n    \n    // 记录日志\n    node.log(`Updating ${equipment.EquipmentID}: TotalPressingCount=${equipment.TotalPressingCount}, DefectCount=${equipment.DefectCount}, AlarmCount=${equipment.AlarmCount}, OperationRate=${equipment.OperationRate.toFixed(1)}`);\n    \n    results.push({\n        equipment: equipment.EquipmentID,\n        sql: sql,\n        data: equipment\n    });\n});\n\n// 发送第一个更新请求\nmsg.payload = results[0];\nmsg.remainingUpdates = results.slice(1);\nmsg.currentIndex = 0;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 380,
+        "wires": [
+            [
+                "c8a29669eff103f8"
+            ]
+        ]
+    },
+    {
+        "id": "9dd69ee01af00410",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "處理後續更新",
+        "func": "// 检查是否还有待更新的设备\nif (msg.remainingUpdates && msg.remainingUpdates.length > 0) {\n    // 发送下一个更新请求\n    msg.payload = msg.remainingUpdates[0];\n    msg.remainingUpdates = msg.remainingUpdates.slice(1);\n    msg.currentIndex = msg.currentIndex + 1;\n    \n    node.log(`Processing update ${msg.currentIndex + 1} of ${msg.currentIndex + 1 + msg.remainingUpdates.length}`);\n    \n    return msg;\n} else {\n    // 所有更新完成\n    node.log(\"All equipment updates completed\");\n    return null; // 结束流程\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 380,
+        "wires": [
+            [
+                "9fb451d349700c21",
+                "c8a29669eff103f8"
+            ]
+        ]
+    },
+    {
+        "id": "c8a29669eff103f8",
+        "type": "MSSQL",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "mssqlCN": "240aa74c02d03240",
+        "name": "執行SQL更新",
+        "outField": "payload",
+        "returnType": 0,
+        "throwErrors": 1,
+        "query": "",
+        "modeOpt": "",
+        "modeOptType": "query",
+        "queryOpt": "payload.sql",
+        "queryOptType": "msg",
+        "paramsOpt": "queryParams",
+        "paramsOptType": "none",
+        "rows": "rows",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [],
+        "x": 760,
+        "y": 380,
+        "wires": [
+            [
+                "9dd69ee01af00410"
+            ]
+        ]
+    },
+    {
+        "id": "91a59561b47e5273",
+        "type": "inject",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "每10分鐘觸發",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"cycle\": 0}",
+        "payloadType": "str",
+        "x": 180,
+        "y": 500,
+        "wires": [
+            [
+                "df9284d39865be6a"
+            ]
+        ]
+    },
+    {
+        "id": "df9284d39865be6a",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "生成真空壓力數據",
+        "func": "// 使用时间戳来生成递增数据\nconst now = new Date();\nconst timestamp = now.getTime();\nconst cycle = Math.floor((timestamp / (5 * 60 * 1000)) % 101); // 每5分钟递增\n\n// 为4台设备生成递增的VacuumPressure数据\nconst equipmentData = [\n    {\n        EquipmentID: \"P01A\",\n        VacuumPressure: (1.0 + cycle * 0.02).toFixed(2) // 1.00 到 3.02\n    },\n    {\n        EquipmentID: \"P01B\", \n        VacuumPressure: (1.5 + cycle * 0.015).toFixed(2) // 1.50 到 3.02\n    },\n    {\n        EquipmentID: \"P02A\",\n        VacuumPressure: (1.2 + cycle * 0.018).toFixed(2) // 1.20 到 3.02\n    },\n    {\n        EquipmentID: \"P02B\",\n        VacuumPressure: (1.8 + cycle * 0.012).toFixed(2) // 1.80 到 3.02\n    }\n];\n\nmsg.equipmentData = equipmentData;\nmsg.cycle = cycle;\nnode.log(`Cycle ${cycle}: Generated VacuumPressure data for ${equipmentData.length} equipment`);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 500,
+        "wires": [
+            [
+                "1337827d68c7c133"
+            ]
+        ]
+    },
+    {
+        "id": "1337827d68c7c133",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "循環插入設備數據",
+        "func": "const equipmentData = msg.equipmentData;\nconst results = [];\n\n// 为每个设备创建INSERT消息\nequipmentData.forEach(equipment => {\n    const sql = `\n        INSERT INTO dbo.Pressing_VacuumHistory \n        (EquipmentID, RecordTime, VacuumPressure, Temperature, Pressure, Status, CreatedTime)\n        VALUES \n        ('${equipment.EquipmentID}', GETDATE(), ${equipment.VacuumPressure}, 80.0, 1.5, 'WARNING', GETDATE())\n    `;\n    \n    // 记录日志\n    node.log(`Inserting ${equipment.EquipmentID}: VacuumPressure=${equipment.VacuumPressure}`);\n    \n    results.push({\n        equipment: equipment.EquipmentID,\n        sql: sql,\n        data: equipment\n    });\n});\n\n// 发送第一个插入请求\nmsg.payload = results[0];\nmsg.remainingInserts = results.slice(1);\nmsg.currentIndex = 0;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 500,
+        "wires": [
+            [
+                "cfbe8ca79114a9ab"
+            ]
+        ]
+    },
+    {
+        "id": "cfbe8ca79114a9ab",
+        "type": "MSSQL",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "mssqlCN": "240aa74c02d03240",
+        "name": "執行SQL插入",
+        "outField": "payload",
+        "returnType": 0,
+        "throwErrors": 1,
+        "query": "",
+        "modeOpt": "",
+        "modeOptType": "query",
+        "queryOpt": "payload.sql",
+        "queryOptType": "msg",
+        "paramsOpt": "queryParams",
+        "paramsOptType": "none",
+        "rows": "rows",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [],
+        "x": 780,
+        "y": 500,
+        "wires": [
+            [
+                "941c0c4b8bdebe74"
+            ]
+        ]
+    },
+    {
+        "id": "941c0c4b8bdebe74",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "處理後續插入",
+        "func": "// 检查是否还有待插入的设备\nif (msg.remainingInserts && msg.remainingInserts.length > 0) {\n    // 发送下一个插入请求\n    msg.payload = msg.remainingInserts[0];\n    msg.remainingInserts = msg.remainingInserts.slice(1);\n    msg.currentIndex = msg.currentIndex + 1;\n    \n    node.log(`Processing insert ${msg.currentIndex + 1} of ${msg.currentIndex + 1 + msg.remainingInserts.length}`);\n    \n    return msg;\n} else {\n    // 所有插入完成\n    node.log(\"All equipment inserts completed\");\n    return null; // 结束流程\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 500,
+        "wires": [
+            [
+                "cfbe8ca79114a9ab",
+                "92ba1cabf2e0992f"
+            ]
+        ]
+    },
+    {
+        "id": "92ba1cabf2e0992f",
+        "type": "debug",
+        "z": "ff0358a526525cd2",
+        "d": true,
+        "g": "de492247843d6f1f",
+        "name": "debug_ispdash",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "e9887014d1afcc7a",
+        "type": "inject",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "每1小時觸發",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "36000",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"action\": \"cleanup\"}",
+        "payloadType": "str",
+        "x": 180,
+        "y": 620,
+        "wires": [
+            [
+                "9eaa3d05b4c578ed"
+            ]
+        ]
+    },
+    {
+        "id": "9eaa3d05b4c578ed",
+        "type": "function",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "生成清理SQL",
+        "func": "// 生成删除超过7天数据的SQL语句\nconst sql = `\n    DELETE FROM dbo.Pressing_VacuumHistory \n    WHERE RecordTime < DATEADD(day, -3, GETDATE())\n`;\n\nmsg.payload = {\n    deleteSql: sql,\n    action: \"cleanup\"\n};\n\n// 添加更多日志信息\nnode.log(\"准备清理超过3天的数据\");\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 620,
+        "wires": [
+            [
+                "0c64c7474cec1afd"
+            ]
+        ]
+    },
+    {
+        "id": "0c64c7474cec1afd",
+        "type": "MSSQL",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "mssqlCN": "240aa74c02d03240",
+        "name": "執行數據清理",
+        "outField": "payload",
+        "returnType": 0,
+        "throwErrors": 1,
+        "query": "",
+        "modeOpt": "",
+        "modeOptType": "query",
+        "queryOpt": "payload.deleteSql",
+        "queryOptType": "msg",
+        "paramsOpt": "queryParams",
+        "paramsOptType": "none",
+        "rows": "rows",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [],
+        "x": 640,
+        "y": 620,
+        "wires": [
+            [
+                "97b5a819717b83d5"
+            ]
+        ]
+    },
+    {
+        "id": "97b5a819717b83d5",
+        "type": "debug",
+        "z": "ff0358a526525cd2",
+        "d": true,
+        "g": "de492247843d6f1f",
+        "name": "查看清理結果",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "inj-5s-weighted",
+        "type": "inject",
+        "z": "ff0358a526525cd2",
+        "g": "8e3bce0dccb93ff2",
+        "name": "每1秒觸發",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.5,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 170,
+        "y": 200,
+        "wires": [
+            [
+                "tpl-update-weighted"
+            ]
+        ]
+    },
+    {
+        "id": "tpl-update-weighted",
+        "type": "template",
+        "z": "ff0358a526525cd2",
+        "g": "8e3bce0dccb93ff2",
+        "name": "生成更新SQL",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "/* 每5秒：隨機抽樣約1/3設備更新；在抽中的設備中，狀態分佈RUN=1/2、IDLE=1/4、DOWN=1/4 */\nUPDATE t\nSET\n  EquipmentState = s.NewState,\n  CompletionRate = ROUND(\n      CASE\n        WHEN t.CompletionRate + s.DeltaCR > 100 THEN 100\n        WHEN t.CompletionRate + s.DeltaCR < 0   THEN 0\n        ELSE t.CompletionRate + s.DeltaCR\n      END, 2),\n  AlarmCount = CASE\n      WHEN s.NewState = 'DOWN' THEN t.AlarmCount + s.AlarmDelta\n      WHEN t.AlarmCount > 0 AND s.ResetAlarm = 1 THEN CASE WHEN t.AlarmCount - 1 < 0 THEN 0 ELSE t.AlarmCount - 1 END\n      ELSE t.AlarmCount\n    END,\n  ProductionTime = t.ProductionTime + s.ProdInc,\n  LastUpdateTime = SYSDATETIME()\nFROM dbo.EquipmentOverview t\nCROSS APPLY (\n  SELECT\n    /* 抽樣桶：約 1/3 會落在 0 號桶 */\n    ABS(CHECKSUM(NEWID(), t.EquipmentID, 99)) % 3 AS Bucket,\n\n    /* 狀態權重：mod 4 → 0/1=RUN(1/2)，2=IDLE(1/4)，3=DOWN(1/4) */\n    CASE ABS(CHECKSUM(NEWID(), t.EquipmentID, 8)) % 4\n      WHEN 0 THEN 'RUN'\n      WHEN 1 THEN 'RUN'\n      WHEN 2 THEN 'IDLE'\n      ELSE 'DOWN'\n    END AS NewState,\n\n    /* 以下為逐列獨立的數值變動 */\n    ((ABS(CHECKSUM(NEWID(), t.EquipmentID, 1)) % 601) - 300) / 100.0 AS DeltaCR,  -- -3.00 ~ +3.00\n    ABS(CHECKSUM(NEWID(), t.EquipmentID, 2)) % 2  AS AlarmDelta,                   -- 0 或 +1 (DOWN 時才加)\n    ABS(CHECKSUM(NEWID(), t.EquipmentID, 3)) % 5  AS ProdInc,                      -- +0 ~ +4（單位依你欄位定義）\n    ABS(CHECKSUM(NEWID(), t.EquipmentID, 4)) % 2  AS ResetAlarm                    -- 偶爾 -1\n) s\nWHERE s.Bucket = 0;  -- 只更新約 1/3 的設備",
+        "x": 360,
+        "y": 200,
+        "wires": [
+            [
+                "sql-update-weighted"
+            ]
+        ]
+    },
+    {
+        "id": "sql-update-weighted",
+        "type": "MSSQL",
+        "z": "ff0358a526525cd2",
+        "g": "8e3bce0dccb93ff2",
+        "mssqlCN": "240aa74c02d03240",
+        "name": "執行SQL更新",
+        "outField": "payload",
+        "returnType": "0",
+        "throwErrors": "0",
+        "query": "payload",
+        "modeOpt": "",
+        "modeOptType": "query",
+        "queryOpt": "payload",
+        "queryOptType": "msg",
+        "paramsOpt": "queryParams",
+        "paramsOptType": "msg",
+        "rows": "",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [],
+        "x": 560,
+        "y": 200,
+        "wires": [
+            [
+                "tpl-select-weighted"
+            ]
+        ]
+    },
+    {
+        "id": "tpl-select-weighted",
+        "type": "template",
+        "z": "ff0358a526525cd2",
+        "g": "8e3bce0dccb93ff2",
+        "name": "生成查詢SQL",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "SELECT TOP 5 EquipmentID, EquipmentType, EquipmentState, CompletionRate, AlarmCount, ProductionTime, LastUpdateTime FROM dbo.EquipmentOverview ORDER BY NEWID();\n",
+        "x": 760,
+        "y": 200,
+        "wires": [
+            [
+                "sql-select-weighted"
+            ]
+        ]
+    },
+    {
+        "id": "sql-select-weighted",
+        "type": "MSSQL",
+        "z": "ff0358a526525cd2",
+        "g": "8e3bce0dccb93ff2",
+        "mssqlCN": "240aa74c02d03240",
+        "name": "查詢更新結果",
+        "outField": "payload",
+        "returnType": "0",
+        "throwErrors": "0",
+        "query": "payload",
+        "modeOpt": "",
+        "modeOptType": "query",
+        "queryOpt": "payload",
+        "queryOptType": "msg",
+        "paramsOpt": "queryParams",
+        "paramsOptType": "msg",
+        "rows": "",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [],
+        "x": 960,
+        "y": 200,
+        "wires": [
+            [
+                "dbg-weighted"
+            ]
+        ]
+    },
+    {
+        "id": "dbg-weighted",
+        "type": "debug",
+        "z": "ff0358a526525cd2",
+        "d": true,
+        "g": "8e3bce0dccb93ff2",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "209efa787ee77fed",
+        "type": "comment",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "壓機狀態更新模擬",
+        "info": "",
+        "x": 170,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "db13ffbdd9ad2824",
+        "type": "comment",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "壓機真空數據模擬",
+        "info": "",
+        "x": 170,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "255d29c20c7cd694",
+        "type": "comment",
+        "z": "ff0358a526525cd2",
+        "g": "de492247843d6f1f",
+        "name": "壓機數據庫清理",
+        "info": "",
+        "x": 160,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "01468914631f0631",
+        "type": "comment",
+        "z": "ff0358a526525cd2",
+        "g": "8e3bce0dccb93ff2",
+        "name": "設備狀態更新模擬",
+        "info": "",
+        "x": 170,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "240aa74c02d03240",
+        "type": "MSSQL-CN",
+        "tdsVersion": "7_4",
+        "name": "ISPDASH",
+        "server": "10.148.206.93",
+        "port": "8502",
+        "encyption": false,
+        "trustServerCertificate": true,
+        "database": "ISPDASH",
+        "useUTC": true,
+        "connectTimeout": "15000",
+        "requestTimeout": "15000",
+        "cancelTimeout": "5000",
+        "pool": "5",
+        "parseJSON": false,
+        "enableArithAbort": true,
+        "readOnlyIntent": false
+    }
+]
